@@ -19,7 +19,7 @@ function getQuestionPart(phrases: string[]): string[] {
     
     const result: string[] = [];
     for (let phrase of phrases) {
-        result.push(phrase.replace(commonSubstring, ""));
+        result.push(phrase.replace(commonSubstring, "").trim());
     }
 
     return result;
