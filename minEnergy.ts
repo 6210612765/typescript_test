@@ -4,11 +4,45 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
     let energy: number = 0;
     const data1: number[] = [...shops];
     const data2: number[] = [...stations];
+    
+
+    if(data1.find(item => item === a)){
+        data1.splice(data1.indexOf(a),1);
+    }
+    
+    if( (target > data2[data2.length-1]) && (data1.find(item => item > data2[data2.length-1])) && (target>data1[data1.length-1]) ){
+        const indicesToRemove: number[] = [];
+        data1.forEach((item, index) => {
+            if (item > data2[data2.length-1]) {
+                indicesToRemove.push(index);
+            }
+        });
+
+        indicesToRemove.reverse().forEach(index => {
+            data1.splice(index, 1);
+        });
+    }
+
+    if( (target < data2[0]) && (data1.find(item => item < data2[0])) && (target<data1[0]) ){
+        const indicesToRemove: number[] = [];
+        data1.forEach((item, index) => {
+            if (item < data2[0]) {
+                indicesToRemove.push(index);
+            }
+        });
+
+        indicesToRemove.reverse().forEach(index => {
+            data1.splice(index, 1);
+        });
+    }
 
     while ( ( Math.abs(d - a) !== 0 ) || (data1.length !== 0) ) {
         while (data1.length !== 0) {
             const compare1: number[] = data1.map(item => Math.abs(item - a));
             const compare2: number[] = data2.map(item => Math.abs(item - a));
+
+            const compare3: number[] = data1.map(item => Math.abs(item - a));
+            const compare4: number[] = data2.map(item => Math.abs(item - a));
 
             const min1: number = Math.min(...compare1);
             const min2: number = Math.min(...compare2);
@@ -16,7 +50,7 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
             const index2_value: number = min2
             
 
-            if (min1 <= min2) {
+            if(min1 <= min2){
                 energy += min1;
                 for (let i = 0; i < data1.length; i++) {
                     if (Math.abs(a - min1) === data1[i] || Math.abs(a + min1) === data1[i]) {
@@ -26,7 +60,7 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
                     }
                 }
 
-            } else {
+            }else{
                 const distances: number[][] = [];
                 for (let i = 0; i < compare1.length; i++) {
                     const distance: number[] = [];
@@ -47,55 +81,92 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
                         let misdirect1 = Math.abs(data2[index1] - lowest) ;
                         let misdirect2 = Math.abs(data2[index1] + lowest) ;
 
-                        if( !(data1.includes(misdirect1) || data1.includes(misdirect2)) ){  
-                            const re = distances[i][index1];
-                            distances[i].splice(index1,1);
-                            const minDistance2 = Math.min(...distances[i]);
-                            index1 = distances[i].indexOf(minDistance2)+1;
-                            distances[i].unshift(index1 , re);
-                            if( !(data1.includes(Math.abs(data2[index1] - lowest)) || data1.includes(Math.abs(data2[index1] + lowest))) ){
-                                compare2.splice(index2,1);
-                                index1 = compare2.indexOf(index2_value)+1;
-                                compare2.unshift(index2, index2_value);
-                            }
-                        }
-                        
                     }
                 }
 
                 energy += Math.abs(data2[index2] - a) + lowest;
                 const check1 = Math.abs(data2[index1] - lowest);
                 const check2 = Math.abs(data2[index1] + lowest);
-                const check3 = data2[index1];
 
                 let base_pos: number = a;
                 if(lowest === 0){
-                    a = data1.find(item => item === check3) || a;
-                    data1.splice(data1.indexOf(a), 1);
+                    if(min2===0){
+                        let diag_line: number = Number.MAX_SAFE_INTEGER;
+                        let diag_index: number = Number.MAX_SAFE_INTEGER;
+                        for (let i=0; i < data1.length; i++) {
+                            if(distances[i][i]<diag_line){ 
+                                diag_line = distances[i][i];
+                                diag_index = i;
+                                a = data1[diag_index];
+                                energy = energy + diag_line;
+                                data1.splice(data1.indexOf(a), 1);
+                            }
+                        }
+                    }else{
+                        if(data1.find(item => item === check1 || item === check2) !== undefined){
+                            a = data1.find(item => item === check1 || item === check2) || a;
+                            data1.splice(data1.indexOf(a), 1);
+                        }else{
+                            let diag_line: number = Number.MAX_SAFE_INTEGER;
+                            let diag_index: number = Number.MAX_SAFE_INTEGER;
+                            for (let i=0; i < data1.length; i++) {
+                                if(distances[i][i]<diag_line){ 
+                                    diag_line = distances[i][i];
+                                    diag_index = i;
+                                    a = data1[diag_index];
+                                    data1.splice(data1.indexOf(a), 1);          
+                                }
+                            }
+                        }
+                    }       
                 }else{
                     
-                    a = data1.find(item => item === check1 || item === check2) || a;
-                    data1.splice(data1.indexOf(a), 1);
-                    
-                    if(base_pos == a){
-                        for(let i=0; i<data2.length; i++){
-                            let number_check: number = data1.length;
-                            const find_pos: number = data2[i];
-                            base_pos = data1.find(item => item === (Math.abs(find_pos - lowest)) || item === (Math.abs(find_pos + lowest)) ) || base_pos;
-                            a = base_pos
+                    if(data1.find(item => item === check1 || item === check2) !== undefined){
+                            a = data1.find(item => item === check1 || item === check2) || a;
+                            data1.splice(data1.indexOf(a), 1);
+                    }else{
+                        let diag_line: number = Number.MAX_SAFE_INTEGER;
+                        let diag_index: number = Number.MAX_SAFE_INTEGER;
+                        for (let i=0; i < data1.length; i++) {
+                            if(distances[i][i]<diag_line){ 
+                                diag_line = distances[i][i];
+                                diag_index = i;
+                                if( data2.find(item => item === (data1[diag_index] - lowest) || item === (data1[diag_index] + lowest) ) !== undefined ){
+                                    a = data1[diag_index];
+                                    data1.splice(data1.indexOf(a), 1);
+                                }else{
+
+                                    if( data2[index2] > data1[diag_index]){
+                                        if(data2.find(item => item === Math.abs(data1[diag_index] - lowest) || item === Math.abs(data1[diag_index] + lowest) ) !== undefined){
+                                            a = data1[diag_index];
+                                            data1.splice(data1.indexOf(a), 1);
+                                        }else{
+                                            energy += Math.abs( (data2[index2] - lowest) - (data1[diag_index]));
+                                            a = data1[diag_index];
+                                            data1.splice(data1.indexOf(a), 1);
+                                        }
+                                    }else {
+                                        if(data2.find(item => item === Math.abs(data1[diag_index] - lowest) || item === Math.abs(data1[diag_index] + lowest) ) !== undefined){
+                                            a = data1[diag_index];
+                                            data1.splice(data1.indexOf(a), 1);
+                                        }else{
+                                            energy += Math.abs( (data2[index2] + lowest) - (data1[diag_index]));
+                                            a = data1[diag_index];
+                                            data1.splice(data1.indexOf(a), 1);
+                                        }
+                                                                           
+                                    }
+                                                                       
+                                }
                             
-                            data1.splice(data1.indexOf(a),1);
-                            if( Math.abs(number_check - data1.length) !== 0 ){
-                                break;
                             }
-                            
                         }
-                        
                     }
 
                 }                         
                 
             }
+           
         }
 
         const lastDistance = Math.abs(d - a);
@@ -115,4 +186,3 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
     }
     return energy;
 }
-
