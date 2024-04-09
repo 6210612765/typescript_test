@@ -49,7 +49,15 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
             const index2: number = compare2.indexOf(min2);
             const index2_value: number = min2
             
-
+            const betweens: number[][] = [];
+                for (let i = 0; i < data1.length; i++) {
+                    const between: number[] = [];
+                    for (let j = 0; j < data2.length; j++) {
+                        between.push(Math.abs(data1[i] - data2[j]));
+                    }
+                    betweens.push(between);
+                }
+            
             if(min1 <= min2){
                 energy += min1;
                 for (let i = 0; i < data1.length; i++) {
@@ -125,42 +133,35 @@ function minEnergy(start: number, shops: number[], stations: number[], target: n
                             a = data1.find(item => item === check1 || item === check2) || a;
                             data1.splice(data1.indexOf(a), 1);
                     }else{
-                        let diag_line: number = Number.MAX_SAFE_INTEGER;
-                        let diag_index: number = Number.MAX_SAFE_INTEGER;
-                        for (let i=0; i < data1.length; i++) {
-                            if(distances[i][i]<diag_line){ 
-                                diag_line = distances[i][i];
-                                diag_index = i;
-                                if( data2.find(item => item === (data1[diag_index] - lowest) || item === (data1[diag_index] + lowest) ) !== undefined ){
-                                    a = data1[diag_index];
-                                    data1.splice(data1.indexOf(a), 1);
-                                }else{
+                        const distance_arr: number[] = betweens.reduce((acc, val) => acc.concat(val), []);
+                        const minDis = Math.min(...distance_arr);
+                        const isSecond = distance_arr.includes(lowest);
 
-                                    if( data2[index2] > data1[diag_index]){
-                                        if(data2.find(item => item === Math.abs(data1[diag_index] - lowest) || item === Math.abs(data1[diag_index] + lowest) ) !== undefined){
-                                            a = data1[diag_index];
-                                            data1.splice(data1.indexOf(a), 1);
-                                        }else{
-                                            energy += Math.abs( (data2[index2] - lowest) - (data1[diag_index]));
-                                            a = data1[diag_index];
-                                            data1.splice(data1.indexOf(a), 1);
-                                        }
-                                    }else {
-                                        if(data2.find(item => item === Math.abs(data1[diag_index] - lowest) || item === Math.abs(data1[diag_index] + lowest) ) !== undefined){
-                                            a = data1[diag_index];
-                                            data1.splice(data1.indexOf(a), 1);
-                                        }else{
-                                            energy += Math.abs( (data2[index2] + lowest) - (data1[diag_index]));
-                                            a = data1[diag_index];
-                                            data1.splice(data1.indexOf(a), 1);
-                                        }
-                                                                           
-                                    }
-                                                                       
+                        if( isSecond ){
+                            let minIndex: number = 0;
+                            for(let i=0; i<data1.length; i++){
+                                if(betweens[i].includes(lowest)){
+                                    minIndex = i;
                                 }
-                            
                             }
+                            a = data1[minIndex];
+                            data1.splice(data1.indexOf(a), 1);
+
+                        }else{
+                            energy += Math.abs( minDis - lowest );
+                            let minIndex: number = Number.MAX_SAFE_INTEGER;
+                            let indexPos: number = Number.MAX_SAFE_INTEGER;
+                            for(let i=0; i<data1.length; i++){
+                                if( Math.min(...betweens[i]) < minIndex){
+                                    minIndex = Math.min(...betweens[i]);
+                                    indexPos = i;
+                                }
+                            }
+                            a = data1[indexPos];
+                            data1.splice(data1.indexOf(a), 1);
+
                         }
+                            
                     }
 
                 }                         
